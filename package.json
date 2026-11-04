@@ -16,7 +16,8 @@
     "fast": "next build && next start --port 3210",
     "app:release": "scripts/release.sh",
     "two-person": "node scripts/dev-two-person.mjs start",
-    "two-person:stop": "node scripts/dev-two-person.mjs stop"
+    "two-person:stop": "node scripts/dev-two-person.mjs stop",
+    "test:platform": "node --test scripts/test-platform.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
