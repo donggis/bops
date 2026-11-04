@@ -75,6 +75,14 @@ async function stopProcessTree(pid, { platform = process.platform, signal = "SIG
   return true;
 }
 
+/** A per-user Windows named pipe replaces the Unix-domain socket used for browser rendering. */
+function getRenderSocketPath({ platform = process.platform, userData, tempDir = os.tmpdir(), pid = process.pid } = {}) {
+  if (platform === "win32") return "\\\\.\\pipe\\bops-render-" + pid;
+  if (!userData) throw new TypeError("userData directory is required.");
+  const file = path.join(userData, "render.sock");
+  return Buffer.byteLength(file) < 100 ? file : path.join(tempDir, "bops-render.sock");
+}
+
 /** Windows and macOS both use Electron's userData directory; only the default log location differs. */
 function getLogDirectory({ platform = process.platform, app } = {}) {
   if (!app || typeof app.getPath !== "function") throw new TypeError("Electron app is required.");
@@ -82,4 +90,4 @@ function getLogDirectory({ platform = process.platform, app } = {}) {
   return app.getPath("logs");
 }
 
-module.exports = { PORT, loginPath, parseWindowsNetstat, findPortListeners, stopProcessTree, getLogDirectory };
+module.exports = { PORT, loginPath, parseWindowsNetstat, findPortListeners, stopProcessTree, getLogDirectory, getRenderSocketPath };
