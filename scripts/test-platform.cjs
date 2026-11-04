@@ -4,6 +4,7 @@ const {
   loginPath,
   parseWindowsNetstat,
   getLogDirectory,
+  getRenderSocketPath,
 } = require("../desktop/platform.cjs");
 
 test("Windows PATH is taken from the Windows environment without invoking a Unix login shell", () => {
@@ -34,4 +35,12 @@ test("Windows netstat parser returns only listeners on the requested port", () =
 test("Windows log directory stays inside Electron userData", () => {
   const app = { getPath: (key) => key === "userData" ? "C:\\Users\\Test\\AppData\\Roaming\\Bops" : "unexpected" };
   assert.equal(getLogDirectory({ platform: "win32", app }), "C:\\Users\\Test\\AppData\\Roaming\\Bops\\logs");
+});
+
+test("Windows renderer IPC uses a named pipe instead of a Unix socket file", () => {
+  assert.equal(getRenderSocketPath({ platform: "win32", pid: 9876 }), "\\\\.\\pipe\\bops-render-9876");
+});
+
+test("macOS renderer IPC keeps the per-user Unix socket", () => {
+  assert.equal(getRenderSocketPath({ platform: "darwin", userData: "/Users/test/Library/Application Support/Bops" }), "/Users/test/Library/Application Support/Bops/render.sock");
 });
