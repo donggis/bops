@@ -16,6 +16,7 @@ const { createUpdates } = require("./updates.cjs");
 const { installAppFrames } = require("./app-frames.cjs");
 const { installPreviewFrames } = require("./preview-frames.cjs");
 const { ownCall } = require("./own-call.cjs");
+const { loginPath: platformLoginPath, getRenderSocketPath } = require("./platform.cjs");
 
 const PORT = 3210;
 const URL = `http://localhost:${PORT}`;
@@ -55,8 +56,7 @@ function windowToken() {
  * from an earlier start reaches it too). A path too long for a socket goes in this user's own temp folder.
  */
 function renderSocket() {
-  const file = path.join(app.getPath("userData"), "render.sock");
-  return Buffer.byteLength(file) < 100 ? file : path.join(os.tmpdir(), "bops-render.sock");
+  return getRenderSocketPath({ platform: process.platform, userData: app.getPath("userData"), tempDir: os.tmpdir(), pid: process.pid });
 }
 let renderService;
 
@@ -109,6 +109,7 @@ let shellPath;
 /** The login shell still being asked, so quitting can stop it. */
 let pathProbe;
 function loginPath() {
+  if (process.platform === "win32") return Promise.resolve(platformLoginPath("win32", process.env));
   shellPath ??= new Promise((resolve) => {
     const fallback = [...new Set([...(process.env.PATH ?? "").split(":").filter(Boolean), ...FALLBACK_PATH])].join(":");
     let out = "";
